@@ -13,6 +13,7 @@ import {
   Plus,
   BarChart3,
 } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
 
 const managerMetrics = [
   {
@@ -47,6 +48,23 @@ const managerMetrics = [
     icon: Package,
     accent: "bg-indigo-50 text-indigo-700",
   },
+];
+
+const inventoryValueData = [
+  { month: "Jan", value: 850000 },
+  { month: "Feb", value: 880000 },
+  { month: "Mar", value: 920000 },
+  { month: "Apr", value: 890000 },
+  { month: "May", value: 1050000 },
+  { month: "Jun", value: 1120000 },
+  { month: "Jul", value: 1200000 },
+];
+
+const warehousePerformanceData = [
+  { name: "Main A", inbound: 400, outbound: 240, amt: 2400 },
+  { name: "Storage B", inbound: 300, outbound: 139, amt: 2210 },
+  { name: "Cold C", inbound: 200, outbound: 980, amt: 2290 },
+  { name: "Buffer D", inbound: 278, outbound: 390, amt: 2000 },
 ];
 
 export default function ManagerDashboard() {
@@ -98,16 +116,47 @@ export default function ManagerDashboard() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Inventory Distribution */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Inventory Distribution</h3>
-          <div className="h-64 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-xl bg-slate-50">
-            <p className="text-sm text-slate-400">Inventory chart visualization</p>
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Inventory Value (Last 7 Months)</h3>
+          <div className="h-64 flex items-center justify-center rounded-xl">
+             <ResponsiveContainer width="100%" height="100%">
+               <AreaChart data={inventoryValueData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                 <defs>
+                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                     <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.3}/>
+                     <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                   </linearGradient>
+                 </defs>
+                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                 <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `$${value / 1000}k`} />
+                 <Tooltip
+                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                    formatter={(value: any) => [`$${value.toLocaleString()}`, 'Inventory Value']}
+                 />
+                 <Area type="monotone" dataKey="value" stroke="#4f46e5" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+               </AreaChart>
+             </ResponsiveContainer>
           </div>
         </section>
 
         {/* Warehouse Performance */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Warehouse Performance</h3>
-          <div className="space-y-4">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Throughput Details</h3>
+          <div className="h-44 w-full mb-4">
+             <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={warehousePerformanceData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                  <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: 12, paddingTop: '10px' }} />
+                  <Bar dataKey="inbound" fill="#10b981" radius={[4, 4, 0, 0]} name="Inbound (Units)" />
+                  <Bar dataKey="outbound" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Outbound (Units)" />
+                </BarChart>
+             </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-4 border-t border-slate-100 pt-4">
             {[
               { name: "Main Warehouse A", capacity: 85, color: "bg-emerald-500" },
               { name: "Secondary Storage B", capacity: 42, color: "bg-blue-500" },

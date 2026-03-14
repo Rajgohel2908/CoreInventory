@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUIStore } from "@/store/ui.store";
 import { Search, Menu, LogOut } from "lucide-react";
 import NotificationCenter from "../notifications/NotificationCenter";
@@ -9,6 +10,14 @@ import { useAuth } from "@/context/AuthContext";
 export default function Topbar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user, logout } = useAuth();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleGlobalSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      router.push(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const userInitials = useMemo(() => {
     const name = user?.name?.trim() || "";
@@ -79,7 +88,10 @@ export default function Topbar() {
           <Search size={16} color="var(--color-text-muted)" />
           <input
             type="text"
-            placeholder="Search products, orders, SKUs..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={handleGlobalSearch}
+            placeholder="Search products, orders, SKUs... (Press Enter)"
             style={{
               border: "none",
               background: "transparent",

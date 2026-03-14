@@ -16,22 +16,21 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// Demo data for a single product
-const product = {
-  id: "1",
-  name: "Steel Bolts M10",
-  sku: "STL-BLT-M10",
-  category: "Fasteners",
-  unitOfMeasure: "units",
-  description:
-    "High-strength steel bolts with hexagonal heads. Grade 8.8, zinc-plated finish. Suitable for structural and mechanical applications.",
-  reorderPoint: 500,
-  reorderQty: 1000,
-  totalStock: 2450,
-  isActive: true,
-  createdAt: "Jan 15, 2026",
-  updatedAt: "Mar 14, 2026",
-};
+// Global demo product list to resolve details correctly
+const demoProducts = [
+  { id: "1", name: "Steel Bolts M10", sku: "STL-BLT-M10", category: "Fasteners", unitOfMeasure: "units", stock: 2450, reorderPoint: 500, reorderQty: 1000, description: "High-strength steel bolts with hexagonal heads. Grade 8.8, zinc-plated finish.", image: "/assets/images/products/steel-bolts-m10.svg" },
+  { id: "2", name: "Copper Pipes 2m", sku: "CPR-PIP-2M", category: "Piping", unitOfMeasure: "meters", stock: 89, reorderPoint: 100, reorderQty: 250, description: "High-grade copper pipes.", image: "/assets/images/products/copper-pipes-2m.svg" },
+  { id: "3", name: "Safety Gloves XL", sku: "SFT-GLV-XL", category: "PPE", unitOfMeasure: "units", stock: 1200, reorderPoint: 200, reorderQty: 500, description: "Industrial grade heavy duty gloves.", image: "/assets/images/products/safety-gloves-xl.svg" },
+  { id: "4", name: "LED Panels 60W", sku: "LED-PNL-60W", category: "Electrical", unitOfMeasure: "units", stock: 0, reorderPoint: 50, reorderQty: 100, description: "Industrial LED panels.", image: "/assets/images/products/led-panels-60w.svg" },
+  { id: "5", name: "Aluminum Sheets 4x8", sku: "ALM-SHT-4X8", category: "Metal", unitOfMeasure: "units", stock: 340, reorderPoint: 75, reorderQty: 200, description: "Standard aluminum sheets.", image: "/assets/images/products/aluminum-sheets-4x8.svg" },
+  { id: "6", name: "PVC Connectors T-Joint", sku: "PVC-CON-TJ", category: "Piping", unitOfMeasure: "units", stock: 5600, reorderPoint: 500, reorderQty: 1000, description: "Durable PVC T-joints.", image: "/assets/images/products/pvc-connectors-tjoint.svg" },
+  { id: "7", name: "Nylon Ropes 10m", sku: "NYL-ROP-10M", category: "Ropes", unitOfMeasure: "units", stock: 45, reorderPoint: 50, reorderQty: 100, description: "Heavy duty nylon ropes.", image: "/assets/images/products/nylon-ropes-10m.svg" },
+  { id: "8", name: "Rubber Seals 50mm", sku: "RBR-SEL-50", category: "Seals", unitOfMeasure: "units", stock: 3200, reorderPoint: 300, reorderQty: 1000, description: "Industrial rubber seal rings.", image: "/assets/images/products/rubber-seals-50mm.svg" },
+  { id: "9", name: "Hex Nuts M12", sku: "HEX-NUT-M12", category: "Fasteners", unitOfMeasure: "units", stock: 8900, reorderPoint: 1000, reorderQty: 2500, description: "M12 Hexagon nuts.", image: "/assets/images/products/hex-nuts-m12.svg" },
+  { id: "10", name: "Stainless Welding Rods", sku: "STN-WLD-ROD", category: "Welding", unitOfMeasure: "kg", stock: 0, reorderPoint: 100, reorderQty: 300, description: "High quality welding rods.", image: "/assets/images/products/stainless-welding-rods.svg" },
+  { id: "11", name: "Carbon Steel Plates", sku: "CRB-STL-PLT", category: "Metal", unitOfMeasure: "units", stock: 25, reorderPoint: 30, reorderQty: 100, description: "Thick carbon steel plates.", image: "/assets/images/products/carbon-steel-plates.svg" },
+  { id: "12", name: "Industrial Fans 24in", sku: "IND-FAN-24", category: "Electrical", unitOfMeasure: "units", stock: 67, reorderPoint: 20, reorderQty: 50, description: "Large industrial ventilation fans.", image: "/assets/images/products/industrial-fans-24in.svg" },
+];
 
 const stockByLocation = [
   { location: "Main Warehouse / Rack A", warehouse: "Main Warehouse", quantity: 1200 },
@@ -56,8 +55,24 @@ const productTransfers = [
 
 type Tab = "overview" | "history" | "transfers";
 
-export default function ProductDetailPage() {
+// Support both page prop injection and params hook fallback correctly
+export default function ProductDetailPage(props: any) {
   const router = useRouter();
+  // Unwrap params depending on the Next.js version or fallback
+  const resolvedParams: any = props?.params ? React.use(props.params as any) : {};
+  const idFromProp = resolvedParams?.id || props?.params?.id || "1";
+  
+  const originalProduct = demoProducts.find(p => p.id === idFromProp) || demoProducts[0];
+  
+  // Format to match the previous local shape
+  const product = {
+    ...originalProduct,
+    totalStock: originalProduct.stock,
+    isActive: true,
+    createdAt: "Jan 15, 2026",
+    updatedAt: "Mar 14, 2026"
+  };
+
   const [activeTab, setActiveTab] = useState<Tab>("overview");
 
   const tabs: { id: Tab; label: string }[] = [
@@ -196,8 +211,12 @@ export default function ProductDetailPage() {
 
             {/* Product Image */}
             <div style={{ background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)", overflow: "hidden", boxShadow: "var(--shadow-md)" }}>
-              <div style={{ height: "200px", background: "linear-gradient(135deg, var(--color-background), var(--color-border))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Package size={56} color="var(--color-text-muted)" style={{ opacity: 0.3 }} />
+              <div style={{ height: "200px", background: "linear-gradient(135deg, var(--color-background), var(--color-border))", display: "flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                {product.image ? (
+                  <img src={product.image} alt={product.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                ) : (
+                  <Package size={56} color="var(--color-text-muted)" style={{ opacity: 0.3 }} />
+                )}
               </div>
             </div>
           </div>

@@ -31,16 +31,22 @@ const ledgerEntries: LedgerEntry[] = [
 
 export default function LedgerPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("All");
+  const [operatorFilter, setOperatorFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   const filteredEntries = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     if (!term) return ledgerEntries;
-    return ledgerEntries.filter((entry) =>
-      [entry.product, entry.sku, entry.ref].some((field) => field.toLowerCase().includes(term))
-    );
-  }, [searchTerm]);
+    return ledgerEntries.filter((entry) => {
+      const matchesSearch = [entry.product, entry.sku, entry.ref].some((field) => field.toLowerCase().includes(term));
+      const matchesType = typeFilter === "All" || entry.type === typeFilter;
+      const matchesOperator = operatorFilter === "All" || entry.operator === operatorFilter;
+      return matchesSearch && matchesType && matchesOperator;
+    });
+  }, [searchTerm, typeFilter, operatorFilter]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(filteredEntries.length / itemsPerPage)),
@@ -88,9 +94,8 @@ export default function LedgerPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleFilterClick = () => {
-    console.log("Open filters");
-  };
+  const typeOptions = Array.from(new Set(ledgerEntries.map((entry) => entry.type)));
+  const operatorOptions = Array.from(new Set(ledgerEntries.map((entry) => entry.operator)));
 
   return (
     <div>
@@ -123,10 +128,47 @@ export default function LedgerPage() {
               style={{ width: "100%", padding: "8px 12px 8px 36px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", outline: "none", fontFamily: "inherit", background: "var(--color-background)" }}
             />
           </div>
-          <button onClick={handleFilterClick} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", fontSize: "13px", cursor: "pointer", fontFamily: "inherit" }}>
+          <button onClick={() => setShowFilters((prev) => !prev)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: showFilters ? "var(--color-primary-light)" : "var(--color-surface)", color: showFilters ? "var(--color-primary)" : "var(--color-text-secondary)", fontSize: "13px", cursor: "pointer", fontFamily: "inherit" }}>
             <Filter size={14} /> Filters <ChevronDown size={12} />
           </button>
         </div>
+
+        {showFilters && (
+          <div style={{ padding: "12px 20px", borderBottom: "1px solid var(--color-border)", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              style={{ padding: "8px 10px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", color: "var(--color-text-primary)", background: "var(--color-surface)", fontFamily: "inherit" }}
+            >
+              <option value="All">All Types</option>
+              {typeOptions.map((type) => (
+                <option key={type} value={type}>{type}</option>
+              ))}
+            </select>
+
+            <select
+              value={operatorFilter}
+              onChange={(e) => setOperatorFilter(e.target.value)}
+              style={{ padding: "8px 10px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", color: "var(--color-text-primary)", background: "var(--color-surface)", fontFamily: "inherit" }}
+            >
+              <option value="All">All Operators</option>
+              {operatorOptions.map((operator) => (
+                <option key={operator} value={operator}>{operator}</option>
+              ))}
+            </select>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTypeFilter("All");
+                setOperatorFilter("All");
+              }}
+              style={{ padding: "8px 10px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", color: "var(--color-text-secondary)", background: "var(--color-background)", fontFamily: "inherit", cursor: "pointer" }}
+            >
+              Reset
+            </button>
+          </div>
+        )}
 
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>

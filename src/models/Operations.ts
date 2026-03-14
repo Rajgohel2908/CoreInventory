@@ -55,7 +55,7 @@ export interface IReceipt extends Document {
   warehouse: mongoose.Types.ObjectId;
   locationId: mongoose.Types.ObjectId;
   notes?: string;
-  status: "Draft" | "Confirmed" | "In Transit" | "Received" | "Done";
+  status: "Draft" | "Confirmed" | "In Transit" | "Received" | "Done" | "Canceled";
   lines: IReceiptLine[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -80,7 +80,7 @@ const ReceiptSchema = new Schema<IReceipt>(
     notes: { type: String },
     status: {
       type: String,
-      enum: ["Draft", "Confirmed", "In Transit", "Received", "Done"],
+      enum: ["Draft", "Confirmed", "In Transit", "Received", "Done", "Canceled"],
       default: "Draft",
     },
     lines: [ReceiptLineSchema],
@@ -111,7 +111,7 @@ export interface IDeliveryOrder extends Document {
   locationId: mongoose.Types.ObjectId;
   priority: "Normal" | "Urgent" | "Critical";
   notes?: string;
-  status: "Draft" | "Confirmed" | "Picking" | "Packed" | "Dispatched" | "Done";
+  status: "Draft" | "Confirmed" | "Picking" | "Packed" | "Dispatched" | "Done" | "Canceled";
   lines: IDeliveryLine[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -139,7 +139,7 @@ const DeliveryOrderSchema = new Schema<IDeliveryOrder>(
     notes: { type: String },
     status: {
       type: String,
-      enum: ["Draft", "Confirmed", "Picking", "Packed", "Dispatched", "Done"],
+      enum: ["Draft", "Confirmed", "Picking", "Packed", "Dispatched", "Done", "Canceled"],
       default: "Draft",
     },
     lines: [DeliveryLineSchema],
@@ -167,7 +167,7 @@ export interface IInternalTransfer extends Document {
   destLocationId: mongoose.Types.ObjectId;
   scheduledDate?: Date;
   notes?: string;
-  status: "Draft" | "Confirmed" | "In Transit" | "Done";
+  status: "Draft" | "Confirmed" | "In Transit" | "Done" | "Canceled";
   lines: ITransferLine[];
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -192,7 +192,7 @@ const InternalTransferSchema = new Schema<IInternalTransfer>(
     notes: { type: String },
     status: {
       type: String,
-      enum: ["Draft", "Confirmed", "In Transit", "Done"],
+      enum: ["Draft", "Confirmed", "In Transit", "Done", "Canceled"],
       default: "Draft",
     },
     lines: [TransferLineSchema],

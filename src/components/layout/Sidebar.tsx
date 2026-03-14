@@ -56,7 +56,7 @@ export default function Sidebar() {
         top: 0,
         left: 0,
         zIndex: 40,
-        overflow: "hidden",
+        overflow: "visible", // Changed from hidden so the toggle button isn't clipped
       }}
     >
       {/* Logo */}
@@ -108,7 +108,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
+      <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto", overflowX: "hidden" }}>
         {itemsToRender.map((section) => (
           <div key={section.section} style={{ marginBottom: "20px" }}>
             <AnimatePresence>
@@ -208,6 +208,7 @@ export default function Sidebar() {
         style={{
           padding: "12px 8px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
+          overflowX: "hidden",
         }}
       >
         <Link

@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ClipboardCheck, Clock3, MapPin } from "lucide-react";
+import { ClipboardCheck, Clock3, MapPin, Search, Filter } from "lucide-react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import StatusBadge from "@/components/shared/StatusBadge";
 
@@ -58,6 +59,26 @@ const quickStats = [
 ];
 
 export default function ReceiptsPage() {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredQueue = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return receiptQueue.filter((receipt) => {
+      const matchesSearch =
+        q.length === 0 ||
+        receipt.ref.toLowerCase().includes(q) ||
+        receipt.supplier.toLowerCase().includes(q) ||
+        receipt.dock.toLowerCase().includes(q) ||
+        receipt.putaway.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === "All" || receipt.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchTerm, statusFilter]);
+
+  const nextPending = filteredQueue.find((receipt) => !["Received", "Done", "Canceled"].includes(receipt.status));
+
   return (
     <div className="space-y-6">
       <Breadcrumbs />
@@ -70,12 +91,47 @@ export default function ReceiptsPage() {
         </div>
         <button
           type="button"
+          onClick={() => {
+            if (nextPending) {
+              router.push(`/receipts/${encodeURIComponent(nextPending.ref)}`);
+            }
+          }}
+          disabled={!nextPending}
           className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
         >
           <ClipboardCheck className="h-4 w-4" />
           Process next receipt
         </button>
       </header>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by reference, supplier, dock..."
+            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+          />
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2">
+          <Filter className="h-4 w-4 text-slate-500" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border-none bg-transparent text-sm text-slate-700 outline-none"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="In Transit">In Transit</option>
+            <option value="Received">Received</option>
+            <option value="Done">Done</option>
+            <option value="Canceled">Canceled</option>
+          </select>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {quickStats.map((stat) => (
@@ -90,7 +146,7 @@ export default function ReceiptsPage() {
       </div>
 
       <div className="space-y-3">
-        {receiptQueue.map((receipt, idx) => {
+        {filteredQueue.map((receipt, idx) => {
           const isPending = !["Received", "Done"].includes(receipt.status);
           return (
             <motion.div
@@ -131,6 +187,7 @@ export default function ReceiptsPage() {
                 <div className="flex items-center gap-2 self-start sm:self-center">
                   <button
                     type="button"
+                    onClick={() => router.push(`/receipts/${encodeURIComponent(receipt.ref)}`)}
                     className={`rounded-lg px-3 py-2 text-xs font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                       isPending
                         ? "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-500"
@@ -142,6 +199,7 @@ export default function ReceiptsPage() {
                   </button>
                   <button
                     type="button"
+                    onClick={() => router.push(`/receipts/${encodeURIComponent(receipt.ref)}`)}
                     className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
                   >
                     Details
@@ -151,6 +209,11 @@ export default function ReceiptsPage() {
             </motion.div>
           );
         })}
+        {filteredQueue.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
+            No receipts match your search/filter.
+          </div>
+        )}
       </div>
     </div>
   );

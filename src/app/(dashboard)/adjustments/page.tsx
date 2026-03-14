@@ -1,8 +1,8 @@
 ﻿"use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { SlidersHorizontal, Clock3, MapPin } from "lucide-react";
+import { SlidersHorizontal, Clock3, MapPin, Search, Filter } from "lucide-react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import StatusBadge from "@/components/shared/StatusBadge";
 
@@ -64,6 +64,22 @@ const quickStats = [
 ];
 
 export default function AdjustmentsPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredAdjustments = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return adjustments.filter((adj) => {
+      const matchesSearch =
+        q.length === 0 ||
+        adj.ref.toLowerCase().includes(q) ||
+        adj.product.toLowerCase().includes(q) ||
+        adj.location.toLowerCase().includes(q);
+      const matchesStatus = statusFilter === "All" || adj.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [searchTerm, statusFilter]);
+
   return (
     <div className="space-y-6">
       <Breadcrumbs />
@@ -76,12 +92,39 @@ export default function AdjustmentsPage() {
         </div>
         <button
           type="button"
+          onClick={() => setStatusFilter("Draft")}
           className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
         >
           <SlidersHorizontal className="h-4 w-4" />
           New count
         </button>
       </header>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by ref, product, location..."
+            className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-800 outline-none transition focus:border-indigo-500"
+          />
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2">
+          <Filter className="h-4 w-4 text-slate-500" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border-none bg-transparent text-sm text-slate-700 outline-none"
+          >
+            <option value="All">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Done">Done</option>
+            <option value="Canceled">Canceled</option>
+          </select>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {quickStats.map((stat) => (
@@ -93,7 +136,7 @@ export default function AdjustmentsPage() {
       </div>
 
       <div className="space-y-3">
-        {adjustments.map((adj, idx) => {
+        {filteredAdjustments.map((adj, idx) => {
           const isPending = adj.status === "Draft";
           return (
             <motion.div
@@ -157,6 +200,11 @@ export default function AdjustmentsPage() {
             </motion.div>
           );
         })}
+        {filteredAdjustments.length === 0 && (
+          <div className="rounded-xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500 shadow-sm">
+            No adjustments match your search/filter.
+          </div>
+        )}
       </div>
     </div>
   );

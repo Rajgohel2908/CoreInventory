@@ -169,8 +169,8 @@ export default function LoginPage() {
         <div style={{ width: "100%", maxWidth: "400px" }}>
           {/* Logo */}
           <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "40px" }}>
-            <div style={{ width: "40px", height: "40px", borderRadius: "var(--radius-lg)", background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff" }}>CI</div>
-            <span style={{ fontSize: "20px", fontWeight: 700, color: "var(--color-text-primary)" }}>CoreInventory</span>
+            <div className="logo react spin" style={{ width: "40px", height: "40px", borderRadius: "var(--radius-lg)", background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#fff", cursor: "pointer" }}>CI</div>
+            <span className="logo react spin" style={{ fontSize: "20px", fontWeight: 700, color: "var(--color-text-primary)", display: "inline-block", cursor: "pointer" }}>CoreInventory</span>
           </div>
 
           <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "8px" }}>Sign In</h2>

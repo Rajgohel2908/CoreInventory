@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -14,20 +15,32 @@ import {
 import StatusBadge from "@/components/shared/StatusBadge";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 
+type Product = {
+  id: string;
+  name: string;
+  sku: string;
+  category: string;
+  stock: number;
+  reorderPoint: number;
+  unit: string;
+  warehouse: string;
+  image: string;
+};
+
 // Demo data
-const demoProducts = [
-  { id: "1", name: "Steel Bolts M10", sku: "STL-BLT-M10", category: "Fasteners", stock: 2450, reorderPoint: 500, unit: "units", image: null },
-  { id: "2", name: "Copper Pipes 2m", sku: "CPR-PIP-2M", category: "Piping", stock: 89, reorderPoint: 100, unit: "meters", image: null },
-  { id: "3", name: "Safety Gloves XL", sku: "SFT-GLV-XL", category: "PPE", stock: 1200, reorderPoint: 200, unit: "units", image: null },
-  { id: "4", name: "LED Panels 60W", sku: "LED-PNL-60W", category: "Electrical", stock: 0, reorderPoint: 50, unit: "units", image: null },
-  { id: "5", name: "Aluminum Sheets 4x8", sku: "ALM-SHT-4X8", category: "Metal", stock: 340, reorderPoint: 75, unit: "units", image: null },
-  { id: "6", name: "PVC Connectors T-Joint", sku: "PVC-CON-TJ", category: "Piping", stock: 5600, reorderPoint: 500, unit: "units", image: null },
-  { id: "7", name: "Nylon Ropes 10m", sku: "NYL-ROP-10M", category: "Ropes", stock: 45, reorderPoint: 50, unit: "units", image: null },
-  { id: "8", name: "Rubber Seals 50mm", sku: "RBR-SEL-50", category: "Seals", stock: 3200, reorderPoint: 300, unit: "units", image: null },
-  { id: "9", name: "Hex Nuts M12", sku: "HEX-NUT-M12", category: "Fasteners", stock: 8900, reorderPoint: 1000, unit: "units", image: null },
-  { id: "10", name: "Stainless Welding Rods", sku: "STN-WLD-ROD", category: "Welding", stock: 0, reorderPoint: 100, unit: "kg", image: null },
-  { id: "11", name: "Carbon Steel Plates", sku: "CRB-STL-PLT", category: "Metal", stock: 25, reorderPoint: 30, unit: "units", image: null },
-  { id: "12", name: "Industrial Fans 24in", sku: "IND-FAN-24", category: "Electrical", stock: 67, reorderPoint: 20, unit: "units", image: null },
+const demoProducts: Product[] = [
+  { id: "1", name: "Steel Bolts M10", sku: "STL-BLT-M10", category: "Fasteners", stock: 2450, reorderPoint: 500, unit: "units", warehouse: "Main Warehouse", image: "/assets/images/products/steel-bolts-m10.svg" },
+  { id: "2", name: "Copper Pipes 2m", sku: "CPR-PIP-2M", category: "Piping", stock: 89, reorderPoint: 100, unit: "meters", warehouse: "East Wing", image: "/assets/images/products/copper-pipes-2m.svg" },
+  { id: "3", name: "Safety Gloves XL", sku: "SFT-GLV-XL", category: "PPE", stock: 1200, reorderPoint: 200, unit: "units", warehouse: "Main Warehouse", image: "/assets/images/products/safety-gloves-xl.svg" },
+  { id: "4", name: "LED Panels 60W", sku: "LED-PNL-60W", category: "Electrical", stock: 0, reorderPoint: 50, unit: "units", warehouse: "West Storage", image: "/assets/images/products/led-panels-60w.svg" },
+  { id: "5", name: "Aluminum Sheets 4x8", sku: "ALM-SHT-4X8", category: "Metal", stock: 340, reorderPoint: 75, unit: "units", warehouse: "Main Warehouse", image: "/assets/images/products/aluminum-sheets-4x8.svg" },
+  { id: "6", name: "PVC Connectors T-Joint", sku: "PVC-CON-TJ", category: "Piping", stock: 5600, reorderPoint: 500, unit: "units", warehouse: "South Dock", image: "/assets/images/products/pvc-connectors-tjoint.svg" },
+  { id: "7", name: "Nylon Ropes 10m", sku: "NYL-ROP-10M", category: "Ropes", stock: 45, reorderPoint: 50, unit: "units", warehouse: "South Dock", image: "/assets/images/products/nylon-ropes-10m.svg" },
+  { id: "8", name: "Rubber Seals 50mm", sku: "RBR-SEL-50", category: "Seals", stock: 3200, reorderPoint: 300, unit: "units", warehouse: "East Wing", image: "/assets/images/products/rubber-seals-50mm.svg" },
+  { id: "9", name: "Hex Nuts M12", sku: "HEX-NUT-M12", category: "Fasteners", stock: 8900, reorderPoint: 1000, unit: "units", warehouse: "Main Warehouse", image: "/assets/images/products/hex-nuts-m12.svg" },
+  { id: "10", name: "Stainless Welding Rods", sku: "STN-WLD-ROD", category: "Welding", stock: 0, reorderPoint: 100, unit: "kg", warehouse: "West Storage", image: "/assets/images/products/stainless-welding-rods.svg" },
+  { id: "11", name: "Carbon Steel Plates", sku: "CRB-STL-PLT", category: "Metal", stock: 25, reorderPoint: 30, unit: "units", warehouse: "East Wing", image: "/assets/images/products/carbon-steel-plates.svg" },
+  { id: "12", name: "Industrial Fans 24in", sku: "IND-FAN-24", category: "Electrical", stock: 67, reorderPoint: 20, unit: "units", warehouse: "West Storage", image: "/assets/images/products/industrial-fans-24in.svg" },
 ];
 
 function getStockStatus(stock: number, reorderPoint: number): { label: string; type: string } {
@@ -37,15 +50,61 @@ function getStockStatus(stock: number, reorderPoint: number): { label: string; t
 }
 
 export default function ProductsPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProductsContent />
+    </Suspense>
+  );
+}
+
+function ProductsContent() {
+  const searchParams = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams?.get("search") || "");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [stockFilter, setStockFilter] = useState("All");
+  const [unitFilter, setUnitFilter] = useState("All");
+  const [warehouseFilter, setWarehouseFilter] = useState("All");
+  const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
-  const filteredProducts = demoProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.sku.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Update internal search state if URL changes
+  useEffect(() => {
+    const q = searchParams?.get("search");
+    if (typeof q === "string") {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
+
+  const filterOptions = useMemo(() => {
+    const categories = Array.from(new Set(demoProducts.map((p) => p.category))).sort();
+    const units = Array.from(new Set(demoProducts.map((p) => p.unit))).sort();
+    const warehouses = Array.from(new Set(demoProducts.map((p) => p.warehouse))).sort();
+    return { categories, units, warehouses };
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    return demoProducts.filter((p) => {
+      const status = getStockStatus(p.stock, p.reorderPoint).label;
+      const matchesQuery =
+        query.length === 0 ||
+        p.name.toLowerCase().includes(query) ||
+        p.sku.toLowerCase().includes(query);
+      const matchesCategory = categoryFilter === "All" || p.category === categoryFilter;
+      const matchesStock = stockFilter === "All" || status === stockFilter;
+      const matchesUnit = unitFilter === "All" || p.unit === unitFilter;
+      const matchesWarehouse = warehouseFilter === "All" || p.warehouse === warehouseFilter;
+      return matchesQuery && matchesCategory && matchesStock && matchesUnit && matchesWarehouse;
+    });
+  }, [searchQuery, categoryFilter, stockFilter, unitFilter, warehouseFilter]);
+
+  const handleResetFilters = () => {
+    setCategoryFilter("All");
+    setStockFilter("All");
+    setUnitFilter("All");
+    setWarehouseFilter("All");
+  };
 
   return (
     <div>
@@ -226,24 +285,102 @@ export default function ProductsPage() {
             flexWrap: "wrap",
           }}
         >
-          {["Category", "Stock Status", "Unit", "Warehouse"].map((filter) => (
-            <select
-              key={filter}
-              style={{
-                padding: "8px 12px",
-                borderRadius: "var(--radius-md)",
-                border: "1px solid var(--color-border)",
-                fontSize: "13px",
-                color: "var(--color-text-muted)",
-                background: "var(--color-surface)",
-                fontFamily: "inherit",
-                cursor: "pointer",
-                minWidth: "140px",
-              }}
-            >
-              <option>{filter}</option>
-            </select>
-          ))}
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              fontSize: "13px",
+              color: "var(--color-text-primary)",
+              background: "var(--color-surface)",
+              fontFamily: "inherit",
+              cursor: "pointer",
+              minWidth: "160px",
+            }}
+          >
+            <option value="All">All Categories</option>
+            {filterOptions.categories.map((category) => (
+              <option key={category} value={category}>{category}</option>
+            ))}
+          </select>
+          <select
+            value={stockFilter}
+            onChange={(e) => setStockFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              fontSize: "13px",
+              color: "var(--color-text-primary)",
+              background: "var(--color-surface)",
+              fontFamily: "inherit",
+              cursor: "pointer",
+              minWidth: "160px",
+            }}
+          >
+            <option value="All">All Stock Status</option>
+            <option value="In Stock">In Stock</option>
+            <option value="Low Stock">Low Stock</option>
+            <option value="Out of Stock">Out of Stock</option>
+          </select>
+          <select
+            value={unitFilter}
+            onChange={(e) => setUnitFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              fontSize: "13px",
+              color: "var(--color-text-primary)",
+              background: "var(--color-surface)",
+              fontFamily: "inherit",
+              cursor: "pointer",
+              minWidth: "160px",
+            }}
+          >
+            <option value="All">All Units</option>
+            {filterOptions.units.map((unit) => (
+              <option key={unit} value={unit}>{unit}</option>
+            ))}
+          </select>
+          <select
+            value={warehouseFilter}
+            onChange={(e) => setWarehouseFilter(e.target.value)}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              fontSize: "13px",
+              color: "var(--color-text-primary)",
+              background: "var(--color-surface)",
+              fontFamily: "inherit",
+              cursor: "pointer",
+              minWidth: "160px",
+            }}
+          >
+            <option value="All">All Warehouses</option>
+            {filterOptions.warehouses.map((warehouse) => (
+              <option key={warehouse} value={warehouse}>{warehouse}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            style={{
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--color-border)",
+              background: "var(--color-background)",
+              color: "var(--color-text-secondary)",
+              fontSize: "13px",
+              cursor: "pointer",
+              fontFamily: "inherit",
+            }}
+          >
+            Reset
+          </button>
         </motion.div>
       )}
 
@@ -284,9 +421,19 @@ export default function ProductsPage() {
                     alignItems: "center",
                     justifyContent: "center",
                     borderBottom: "1px solid var(--color-border)",
+                    overflow: "hidden",
                   }}
                 >
-                  <Package size={40} color="var(--color-text-muted)" style={{ opacity: 0.4 }} />
+                  {product.image && !failedImages[product.id] ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      onError={() => setFailedImages((prev) => ({ ...prev, [product.id]: true }))}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <Package size={40} color="var(--color-text-muted)" style={{ opacity: 0.4 }} />
+                  )}
                 </div>
                 {/* Card Content */}
                 <div style={{ padding: "16px" }}>
@@ -391,8 +538,30 @@ export default function ProductsPage() {
                   </motion.tr>
                 );
               })}
+              {filteredProducts.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: "20px", textAlign: "center", color: "var(--color-text-secondary)" }}>
+                    No products match your current search and filters.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {viewMode === "grid" && filteredProducts.length === 0 && (
+        <div
+          style={{
+            padding: "20px",
+            border: "1px solid var(--color-border)",
+            borderRadius: "var(--radius-lg)",
+            background: "var(--color-surface)",
+            color: "var(--color-text-secondary)",
+            textAlign: "center",
+          }}
+        >
+          No products match your current search and filters.
         </div>
       )}
     </div>
