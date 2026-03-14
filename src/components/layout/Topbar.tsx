@@ -2,8 +2,9 @@
 
 import React, { useMemo } from "react";
 import { useUIStore } from "@/store/ui.store";
+import { Search, Menu, LogOut } from "lucide-react";
+import NotificationCenter from "../notifications/NotificationCenter";
 import { useAuth } from "@/context/AuthContext";
-import { Bell, Search, Menu, LogOut } from "lucide-react";
 
 export default function Topbar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
@@ -107,40 +108,7 @@ export default function Topbar() {
 
       {/* Right: Notifications + User */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        {/* Notification Bell */}
-        <button
-          style={{
-            position: "relative",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "8px",
-            borderRadius: "var(--radius-md)",
-            color: "var(--color-text-secondary)",
-            transition: "background var(--duration-micro) ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-background)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <Bell size={20} />
-          {/* Notification dot */}
-          <span
-            style={{
-              position: "absolute",
-              top: "6px",
-              right: "6px",
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: "var(--color-error)",
-              border: "2px solid var(--color-surface)",
-            }}
-          />
-        </button>
+        <NotificationCenter />
 
         {/* User Avatar + Logout */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

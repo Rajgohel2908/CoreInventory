@@ -13,6 +13,15 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState(user?.phone || "");
 
   const roleLabel = useMemo(() => (user?.role === "STAFF" ? "Warehouse Staff" : "Inventory Manager"), [user?.role]);
+  const getInitials = (fullName: string) => {
+    return fullName
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div>
@@ -25,7 +34,7 @@ export default function ProfilePage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)", padding: "32px 24px", textAlign: "center", boxShadow: "var(--shadow-md)" }}>
           <div style={{ position: "relative", width: "96px", height: "96px", margin: "0 auto 16px" }}>
             <div style={{ width: "96px", height: "96px", borderRadius: "50%", background: "linear-gradient(135deg, var(--color-primary), #3B82F6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: 700, color: "#fff" }}>
-              IM
+              {user?.name ? getInitials(user.name) : "U"}
             </div>
             <button style={{ position: "absolute", bottom: 0, right: 0, width: "32px", height: "32px", borderRadius: "50%", background: "var(--color-surface)", border: "2px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
               <Camera size={14} color="var(--color-text-secondary)" />

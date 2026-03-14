@@ -26,6 +26,12 @@ type SignupStep = "INFO" | "SECURITY" | "OTP";
 export default function SignUpPage() {
   const router = useRouter();
   const { signup } = useAuth();
+  const normalizePhone = (raw: string) => {
+    const trimmed = raw.replace(/\s+/g, "");
+    if (!trimmed) return "";
+    if (trimmed.startsWith("+")) return trimmed;
+    return `+91${trimmed}`;
+  };
 
   const [step, setStep] = useState<SignupStep>("INFO");
   const [formData, setFormData] = useState({
@@ -69,9 +75,10 @@ export default function SignUpPage() {
 
   const validateSecurity = () => {
     const newErrors: Record<string, string> = {};
+    const normalizedPhone = normalizePhone(formData.phone);
     if (!formData.phone) newErrors.phone = "Phone number is required";
-    if (!/^\+?[1-9]\d{1,14}$/.test(formData.phone))
-      newErrors.phone = "Invalid phone (e.g. +1234567890)";
+    if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone))
+      newErrors.phone = "Invalid phone (example: +911234567890)";
     if (!formData.password) newErrors.password = "Password is required";
     if (formData.password.length < 8) newErrors.password = "Minimum 8 characters";
     if (formData.password !== formData.confirmPassword)
@@ -80,6 +87,10 @@ export default function SignUpPage() {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return false;
+    }
+    // Persist normalized phone so OTP + UI use the same value
+    if (normalizedPhone !== formData.phone) {
+      setFormData((prev) => ({ ...prev, phone: normalizedPhone }));
     }
     return true;
   };
@@ -92,6 +103,7 @@ export default function SignUpPage() {
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateSecurity()) return;
+    const normalizedPhone = normalizePhone(formData.phone);
 
     setIsLoading(true);
     setErrors({});
@@ -99,10 +111,11 @@ export default function SignUpPage() {
       const res = await fetch("/api/auth/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send", phone: formData.phone }),
+        body: JSON.stringify({ action: "send", phone: normalizedPhone }),
       });
       const data = await res.json();
       if (res.ok) {
+        setFormData((prev) => ({ ...prev, phone: normalizedPhone }));
         setStep("OTP");
       } else {
         setErrors({ phone: data.error || "Failed to send OTP" });
@@ -131,6 +144,7 @@ export default function SignUpPage() {
   const handleVerifyAndSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = otp.join("");
+    const normalizedPhone = normalizePhone(formData.phone);
     if (code.length !== 6) {
       setErrors({ otp: "Enter 6-digit code" });
       return;
@@ -142,7 +156,7 @@ export default function SignUpPage() {
       const verifyRes = await fetch("/api/auth/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify", phone: formData.phone, code }),
+        body: JSON.stringify({ action: "verify", phone: normalizedPhone, code }),
       });
       const verifyData = await verifyRes.json();
 
@@ -157,7 +171,7 @@ export default function SignUpPage() {
         name: formData.fullName,
         email: formData.email,
         password: formData.password,
-        phone: formData.phone,
+        phone: normalizedPhone,
         company: formData.company,
         role: formData.role === "manager" ? "MANAGER" : "STAFF",
       });
@@ -325,10 +339,10 @@ export default function SignUpPage() {
                 <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "28px" }}>Verify your phone for two-factor authentication</p>
                 <form onSubmit={handleSendOtp}>
                   <div style={{ marginBottom: "20px" }}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Phone Number (E.164)</label>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Phone Number (auto +91)</label>
                     <div style={{ position: "relative" }}>
                       <Phone size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
-                      <input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="+1234567890" style={inputStyle(!!errors.phone)} />
+                      <input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value)} placeholder="9876543210 (we'll add +91)" style={inputStyle(!!errors.phone)} />
                     </div>
                     {errors.phone && <p style={{ color: "var(--color-error)", fontSize: "12px", marginTop: "4px" }}>{errors.phone}</p>}
                   </div>

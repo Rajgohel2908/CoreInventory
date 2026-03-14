@@ -12,6 +12,7 @@ const apiPublicRoutes = [
   "/api/auth/verify-otp",
   "/api/auth/reset-password",
   "/api/auth/otp",
+  "/api/socket/io",
 ];
 
 export function middleware(request: NextRequest) {

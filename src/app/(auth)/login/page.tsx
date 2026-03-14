@@ -23,6 +23,13 @@ type LoginMethod = "PASSWORD" | "OTP";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  const normalizePhone = (raw: string) => {
+    const trimmed = raw.replace(/\s+/g, "");
+    if (!trimmed) return "";
+    if (trimmed.startsWith("+")) return trimmed;
+    // Auto-prepend India code if user omitted country code
+    return `+91${trimmed}`;
+  };
 
   const [method, setMethod] = useState<LoginMethod>("PASSWORD");
   const [email, setEmail] = useState("");
@@ -55,8 +62,17 @@ export default function LoginPage() {
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone) {
+    const normalizedPhone = normalizePhone(phone);
+    // Require E.164 after normalization
+    const phoneRegex = /^\+[1-9]\d{7,14}$/;
+
+    if (!normalizedPhone) {
       setError("Please enter your phone number");
+      return;
+    }
+
+    if (!phoneRegex.test(normalizedPhone)) {
+      setError("Invalid phone (example: +911234567890)");
       return;
     }
     setIsLoading(true);
@@ -65,10 +81,11 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send", phone }),
+        body: JSON.stringify({ action: "send", phone: normalizedPhone }),
       });
       const data = await res.json();
       if (res.ok) {
+        setPhone(normalizedPhone); // reflect auto +91 in UI
         setOtpSent(true);
       } else {
         setError(data.error || "Failed to send OTP");
@@ -97,6 +114,8 @@ export default function LoginPage() {
   const handleOtpLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = otp.join("");
+    const normalizedPhone = normalizePhone(phone);
+
     if (code.length !== 6) {
       setError("Please enter 6-digit code");
       return;
@@ -110,7 +129,7 @@ export default function LoginPage() {
       const verifyRes = await fetch("/api/auth/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "verify", phone, code }),
+        body: JSON.stringify({ action: "verify", phone: normalizedPhone, code }),
       });
       const verifyData = await verifyRes.json();
 
@@ -197,10 +216,10 @@ export default function LoginPage() {
                 {!otpSent ? (
                   <form onSubmit={handleSendOtp}>
                     <div style={{ marginBottom: "24px" }}>
-                      <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Phone Number (E.164)</label>
+                      <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Phone Number (auto +91)</label>
                       <div style={{ position: "relative" }}>
                         <Phone size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
-                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1234567890" style={{ width: "100%", padding: "10px 12px 10px 40px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", outline: "none" }} />
+                        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9876543210 (we'll add +91)" style={{ width: "100%", padding: "10px 12px 10px 40px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", outline: "none" }} />
                       </div>
                     </div>
                     <button type="submit" disabled={isLoading} style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", background: "var(--color-primary)", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>

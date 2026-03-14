@@ -1,67 +1,163 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import { motion } from "framer-motion";
+import { SlidersHorizontal, Clock3, MapPin } from "lucide-react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
-import { Plus, SlidersHorizontal, MoreHorizontal } from "lucide-react";
+import StatusBadge from "@/components/shared/StatusBadge";
 
-const demoAdjustments = [
-  { id: 1, product: "LED Panels 60W", sku: "LED-PNL-60W", location: "West Storage / Zone A", recorded: 12, counted: 0, delta: -12, reason: "Damaged", date: "Mar 13, 2026", operator: "Jane Smith" },
-  { id: 2, product: "Nylon Ropes 10m", sku: "NYL-ROP-10M", location: "South Dock / Bay 1", recorded: 50, counted: 45, delta: -5, reason: "Count Error", date: "Mar 12, 2026", operator: "John Doe" },
-  { id: 3, product: "Carbon Steel Plates", sku: "CRB-STL-PLT", location: "Main Warehouse / Rack A", recorded: 22, counted: 25, delta: +3, reason: "Count Error", date: "Mar 10, 2026", operator: "Jane Smith" },
-  { id: 4, product: "Rubber Seals 50mm", sku: "RBR-SEL-50", location: "East Wing / Zone B", recorded: 3250, counted: 3200, delta: -50, reason: "Expired", date: "Mar 08, 2026", operator: "John Doe" },
+const adjustments = [
+  {
+    ref: "ADJ/2026/0021",
+    product: "LED Panels 60W",
+    status: "Done",
+    location: "West Storage - Zone A",
+    recorded: 12,
+    counted: 0,
+    delta: -12,
+    reason: "Damaged",
+    time: "10m ago",
+    operator: "Jane Smith",
+  },
+  {
+    ref: "ADJ/2026/0020",
+    product: "Nylon Ropes 10m",
+    status: "Done",
+    location: "South Dock - Bay 1",
+    recorded: 50,
+    counted: 45,
+    delta: -5,
+    reason: "Count Error",
+    time: "1h ago",
+    operator: "John Doe",
+  },
+  {
+    ref: "ADJ/2026/0019",
+    product: "Carbon Steel Plates",
+    status: "Draft",
+    location: "Main Rack A",
+    recorded: 22,
+    counted: 25,
+    delta: 3,
+    reason: "Count Error",
+    time: "Today 09:10",
+    operator: "Jane Smith",
+  },
+  {
+    ref: "ADJ/2026/0018",
+    product: "Rubber Seals 50mm",
+    status: "Draft",
+    location: "East Wing - Zone B",
+    recorded: 3250,
+    counted: 3200,
+    delta: -50,
+    reason: "Expired",
+    time: "Yesterday",
+    operator: "John Doe",
+  },
+];
+
+const quickStats = [
+  { label: "Counts logged today", value: 3 },
+  { label: "Open drafts", value: 2 },
+  { label: "Net delta", value: "-64" },
 ];
 
 export default function AdjustmentsPage() {
   return (
-    <div>
+    <div className="space-y-6">
       <Breadcrumbs />
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "16px" }}>
-        <div>
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "4px" }}>Stock Adjustments</h1>
-          <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", margin: 0 }}>Reconcile physical counts with recorded stock levels</p>
+
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <p className="text-sm text-slate-500">Warehouse Tasks</p>
+          <h1 className="text-3xl font-bold text-slate-900">Inventory Counting</h1>
+          <p className="text-sm text-slate-500">Cycle counts and corrective adjustments.</p>
         </div>
-        <motion.button whileTap={{ scale: 0.97 }} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", borderRadius: "var(--radius-md)", background: "var(--color-primary)", color: "#fff", border: "none", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(26,86,219,0.3)" }}>
-          <Plus size={16} /> New Adjustment
-        </motion.button>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          New count
+        </button>
+      </header>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {quickStats.map((stat) => (
+          <div key={stat.label} className="rounded-xl border border-slate-200 bg-white p-4 text-center shadow-sm">
+            <p className="text-sm font-semibold text-slate-500">{stat.label}</p>
+            <p className="text-2xl font-semibold text-slate-900">{stat.value}</p>
+          </div>
+        ))}
       </div>
 
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)", boxShadow: "var(--shadow-md)", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid var(--color-border)", background: "var(--color-background)" }}>
-              {["Product", "SKU", "Location", "Recorded", "Counted", "Delta", "Reason", "Date", "Operator", ""].map((h) => (
-                <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontWeight: 600, color: "var(--color-text-muted)", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {demoAdjustments.map((a, i) => (
-              <motion.tr key={a.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}
-                style={{ borderBottom: "1px solid var(--color-border)", height: "52px", transition: "background var(--duration-micro) ease" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "var(--color-background)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-                <td style={{ padding: "12px 16px", fontWeight: 500, color: "var(--color-text-primary)" }}>{a.product}</td>
-                <td style={{ padding: "12px 16px", fontFamily: "var(--font-geist-mono)", color: "var(--color-text-muted)", fontSize: "12px" }}>{a.sku}</td>
-                <td style={{ padding: "12px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{a.location}</td>
-                <td style={{ padding: "12px 16px", fontFamily: "var(--font-geist-mono)", color: "var(--color-text-primary)" }}>{a.recorded}</td>
-                <td style={{ padding: "12px 16px", fontFamily: "var(--font-geist-mono)", color: "var(--color-text-primary)" }}>{a.counted}</td>
-                <td style={{ padding: "12px 16px", fontFamily: "var(--font-geist-mono)", fontWeight: 600, color: a.delta > 0 ? "var(--color-success)" : "var(--color-error)" }}>
-                  {a.delta > 0 ? `+${a.delta}` : a.delta}
-                </td>
-                <td style={{ padding: "12px 16px" }}>
-                  <span style={{ padding: "3px 8px", borderRadius: "var(--radius-full)", background: "var(--color-draft-bg)", color: "var(--color-draft-text)", fontSize: "11px", fontWeight: 500 }}>{a.reason}</span>
-                </td>
-                <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", whiteSpace: "nowrap" }}>{a.date}</td>
-                <td style={{ padding: "12px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{a.operator}</td>
-                <td style={{ padding: "12px 16px" }}>
-                  <button style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-text-muted)", padding: "4px" }}><MoreHorizontal size={16} /></button>
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-      </motion.div>
+      <div className="space-y-3">
+        {adjustments.map((adj, idx) => {
+          const isPending = adj.status === "Draft";
+          return (
+            <motion.div
+              key={adj.ref}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: idx * 0.04, duration: 0.2 }}
+              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {adj.ref}
+                </span>
+                <StatusBadge status={adj.status} />
+                <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
+                  {adj.reason}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-slate-900">{adj.product}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {adj.location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock3 className="h-4 w-4" />
+                      {adj.time}
+                    </span>
+                    <span className="font-semibold text-slate-700">
+                      {adj.recorded} recorded / {adj.counted} counted
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">Operator: {adj.operator}</p>
+                </div>
+                <div className="flex items-center gap-2 self-start sm:self-center">
+                  <span
+                    className={`rounded-full px-3 py-2 text-xs font-semibold ${
+                      adj.delta >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                    }`}
+                  >
+                    {adj.delta > 0 ? "+" : ""}
+                    {adj.delta}
+                  </span>
+                  <button
+                    type="button"
+                    className={`rounded-lg px-3 py-2 text-xs font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                      isPending
+                        ? "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-500"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                    disabled={!isPending}
+                  >
+                    {isPending ? "Execute count" : "Reviewed"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }

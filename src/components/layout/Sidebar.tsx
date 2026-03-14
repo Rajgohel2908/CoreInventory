@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore } from "@/store/ui.store";
 import { useAuth } from "@/context/AuthContext";
-import { NAV_ITEMS } from "@/lib/constants";
+import { NAV_ITEMS, STAFF_NAV_ITEMS } from "@/lib/constants";
 import {
   LayoutDashboard,
   Package,
@@ -38,7 +38,9 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
 export default function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+
+  const itemsToRender = user?.role === "STAFF" ? STAFF_NAV_ITEMS : NAV_ITEMS;
 
   return (
     <aside
@@ -107,7 +109,7 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto" }}>
-        {NAV_ITEMS.map((section) => (
+        {itemsToRender.map((section) => (
           <div key={section.section} style={{ marginBottom: "20px" }}>
             <AnimatePresence>
               {!sidebarCollapsed && (
