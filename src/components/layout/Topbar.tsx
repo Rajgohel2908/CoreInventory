@@ -2,10 +2,22 @@
 
 import React from "react";
 import { useUIStore } from "@/store/ui.store";
-import { Bell, Search, Menu } from "lucide-react";
+import { Search, Menu } from "lucide-react";
+import NotificationCenter from "../notifications/NotificationCenter";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Topbar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { user } = useAuth();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <header
@@ -95,40 +107,7 @@ export default function Topbar() {
 
       {/* Right: Notifications + User */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-        {/* Notification Bell */}
-        <button
-          style={{
-            position: "relative",
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            padding: "8px",
-            borderRadius: "var(--radius-md)",
-            color: "var(--color-text-secondary)",
-            transition: "background var(--duration-micro) ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-background)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <Bell size={20} />
-          {/* Notification dot */}
-          <span
-            style={{
-              position: "absolute",
-              top: "6px",
-              right: "6px",
-              width: "8px",
-              height: "8px",
-              borderRadius: "50%",
-              background: "var(--color-error)",
-              border: "2px solid var(--color-surface)",
-            }}
-          />
-        </button>
+        <NotificationCenter />
 
         {/* User Avatar */}
         <div
@@ -148,43 +127,43 @@ export default function Topbar() {
             e.currentTarget.style.background = "transparent";
           }}
         >
-          <div
-            style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--color-primary), #3B82F6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: "13px",
-              fontWeight: 600,
-            }}
-          >
-            IM
-          </div>
-          <div style={{ lineHeight: 1.2 }}>
-            <p
+            <div
               style={{
-                margin: 0,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, var(--color-primary), #3B82F6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "var(--color-text-primary)",
               }}
             >
-              Inventory Manager
-            </p>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "11px",
-                color: "var(--color-text-muted)",
-              }}
-            >
-              manager@coreinventory.com
-            </p>
-          </div>
+              {user?.name ? getInitials(user.name) : "U"}
+            </div>
+            <div style={{ lineHeight: 1.2 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "var(--color-text-primary)",
+                }}
+              >
+                {user?.name || "Loading..."}
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "11px",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                {user?.email || ""}
+              </p>
+            </div>
         </div>
       </div>
     </header>

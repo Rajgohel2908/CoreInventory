@@ -19,6 +19,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === "send") {
+      if (process.env.NODE_ENV === "development") {
+        return NextResponse.json({
+          success: true,
+          message: "OTP send bypassed in Dev mode",
+        });
+      }
+
       const result = await sendOTP(phone, "sms");
       if (!result.success) {
         return NextResponse.json(
@@ -41,7 +48,9 @@ export async function POST(req: NextRequest) {
       }
 
       const result = await verifyOTP(phone, code);
-      if (!result.success || !result.valid) {
+      const isDevBypass = process.env.NODE_ENV === "development" && code === "123456";
+
+      if (!(result.success && result.valid) && !isDevBypass) {
         return NextResponse.json(
           { error: "Invalid OTP code" },
           { status: 400 }
@@ -50,7 +59,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         success: true,
         valid: true,
-        message: "Phone verified successfully",
+        message: isDevBypass ? "Phone verified via Dev-Bypass" : "Phone verified successfully",
       });
     }
 

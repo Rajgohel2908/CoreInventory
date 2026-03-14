@@ -83,3 +83,15 @@ export const NAV_ITEMS = [
     ],
   },
 ] as const;
+
+export const STAFF_NAV_ITEMS = [
+  {
+    section: "Warehouse Tasks",
+    items: [
+      { label: "Shelving & Receipts", href: "/receipts", icon: "ClipboardCheck" },
+      { label: "Picking & Deliveries", href: "/deliveries", icon: "Truck" },
+      { label: "Stock Transfers", href: "/transfers", icon: "ArrowLeftRight" },
+      { label: "Inventory Counting", href: "/adjustments", icon: "SlidersHorizontal" },
+    ],
+  },
+] as const;

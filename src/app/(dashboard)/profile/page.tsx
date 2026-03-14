@@ -4,11 +4,22 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { User, Mail, Phone, Lock, Camera, Clock, LogOut, Bell, Save } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ProfilePage() {
-  const [name, setName] = useState("Inventory Manager");
-  const [email] = useState("manager@coreinventory.com");
-  const [phone, setPhone] = useState("+91 98765 43210");
+  const { user, logout } = useAuth();
+  const [name, setName] = useState(user?.name || "");
+  const [email] = useState(user?.email || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
 
   return (
     <div>
@@ -21,14 +32,16 @@ export default function ProfilePage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ background: "var(--color-surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--color-border)", padding: "32px 24px", textAlign: "center", boxShadow: "var(--shadow-md)" }}>
           <div style={{ position: "relative", width: "96px", height: "96px", margin: "0 auto 16px" }}>
             <div style={{ width: "96px", height: "96px", borderRadius: "50%", background: "linear-gradient(135deg, var(--color-primary), #3B82F6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", fontWeight: 700, color: "#fff" }}>
-              IM
+              {user?.name ? getInitials(user.name) : "U"}
             </div>
             <button style={{ position: "absolute", bottom: 0, right: 0, width: "32px", height: "32px", borderRadius: "50%", background: "var(--color-surface)", border: "2px solid var(--color-border)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "var(--shadow-sm)" }}>
               <Camera size={14} color="var(--color-text-secondary)" />
             </button>
           </div>
-          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600, color: "var(--color-text-primary)" }}>{name}</h3>
-          <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "var(--color-primary)", fontWeight: 500 }}>Inventory Manager</p>
+          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600, color: "var(--color-text-primary)" }}>{user?.name || "User"}</h3>
+          <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "var(--color-primary)", fontWeight: 500 }}>
+            {user?.role === "MANAGER" ? "Inventory Manager" : "Warehouse Staff"}
+          </p>
           <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "var(--color-text-muted)" }}>{email}</p>
           <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center", fontSize: "12px", color: "var(--color-text-muted)" }}>
@@ -67,7 +80,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "6px" }}>Role</label>
-                <input type="text" value="Inventory Manager" readOnly style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "14px", outline: "none", fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-text-muted)" }} />
+                <input type="text" value={user?.role === "MANAGER" ? "Inventory Manager" : "Warehouse Staff"} readOnly style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "14px", outline: "none", fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-text-muted)" }} />
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
@@ -102,7 +115,12 @@ export default function ProfilePage() {
                   <p style={{ margin: 0, fontSize: "12px", color: "var(--color-text-muted)" }}>Sign out from all active sessions</p>
                 </div>
               </div>
-              <button style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-error)", background: "transparent", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit", color: "var(--color-error)" }}>Sign Out All</button>
+              <button
+                onClick={logout}
+                style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-error)", background: "transparent", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit", color: "var(--color-error)" }}
+              >
+                Sign Out All
+              </button>
             </div>
           </motion.div>
         </div>
