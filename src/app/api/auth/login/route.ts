@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     await connectDB();
-    const { email, password } = await req.json();
+    const body = await req.json();
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
 
     if (!email || !password) {
       return NextResponse.json(
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find user with password field
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });

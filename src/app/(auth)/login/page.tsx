@@ -172,7 +172,7 @@ export default function LoginPage() {
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Email Address</label>
                   <div style={{ position: "relative" }}>
                     <Mail size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="manager@company.com" style={{ width: "100%", padding: "10px 12px 10px 40px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", outline: "none" }} />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" style={{ width: "100%", padding: "10px 12px 10px 40px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", outline: "none" }} />
                   </div>
                 </div>
                 <div style={{ marginBottom: "20px" }}>

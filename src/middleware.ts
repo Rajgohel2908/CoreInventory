@@ -18,7 +18,12 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(COOKIE_NAME)?.value;
 
-  // Allow public API routes
+  // Let API routes handle auth in their own handlers and return JSON errors (no HTML redirects).
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
+  // Allow explicit public API routes
   if (apiPublicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next();
   }

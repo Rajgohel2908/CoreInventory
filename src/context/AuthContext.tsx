@@ -15,7 +15,11 @@ interface AuthUser {
 interface AuthContextType {
   user: AuthUser | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string,
+    role?: "MANAGER" | "STAFF"
+  ) => Promise<{ success: boolean; error?: string }>;
   signup: (data: SignupData) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -56,12 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, [refreshUser]);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, role?: "MANAGER" | "STAFF") => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, role }),
       });
       const data = await res.json();
       if (!res.ok) return { success: false, error: data.error || "Login failed" };

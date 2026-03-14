@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore } from "@/store/ui.store";
+import { useAuth } from "@/context/AuthContext";
 import { NAV_ITEMS } from "@/lib/constants";
 import {
   LayoutDashboard,
@@ -37,6 +38,7 @@ const iconMap: Record<string, React.ComponentType<{ size?: number }>> = {
 export default function Sidebar() {
   const pathname = usePathname();
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { logout } = useAuth();
 
   return (
     <aside
@@ -257,6 +259,7 @@ export default function Sidebar() {
             width: "100%",
             transition: "all var(--duration-micro) ease",
           }}
+          onClick={logout}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--sidebar-hover)";
           }}

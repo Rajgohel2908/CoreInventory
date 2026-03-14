@@ -1,11 +1,23 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useUIStore } from "@/store/ui.store";
-import { Bell, Search, Menu } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { Bell, Search, Menu, LogOut } from "lucide-react";
 
 export default function Topbar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { user, logout } = useAuth();
+
+  const userInitials = useMemo(() => {
+    const name = user?.name?.trim() || "";
+    const parts = name.split(" ").filter(Boolean);
+    if (parts.length === 0) return "CI";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }, [user?.name]);
+
+  const userRoleLabel = user?.role === "STAFF" ? "Warehouse Staff" : "Inventory Manager";
 
   return (
     <header
@@ -130,61 +142,82 @@ export default function Topbar() {
           />
         </button>
 
-        {/* User Avatar */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            padding: "4px 8px",
-            borderRadius: "var(--radius-lg)",
-            cursor: "pointer",
-            transition: "background var(--duration-micro) ease",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "var(--color-background)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
+        {/* User Avatar + Logout */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <div
             style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, var(--color-primary), #3B82F6)",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              color: "#fff",
-              fontSize: "13px",
-              fontWeight: 600,
+              gap: "10px",
+              padding: "4px 8px",
+              borderRadius: "var(--radius-lg)",
+              transition: "background var(--duration-micro) ease",
             }}
           >
-            IM
-          </div>
-          <div style={{ lineHeight: 1.2 }}>
-            <p
+            <div
               style={{
-                margin: 0,
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, var(--color-primary), #3B82F6)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
                 fontSize: "13px",
                 fontWeight: 600,
-                color: "var(--color-text-primary)",
               }}
             >
-              Inventory Manager
-            </p>
-            <p
-              style={{
-                margin: 0,
-                fontSize: "11px",
-                color: "var(--color-text-muted)",
-              }}
-            >
-              manager@coreinventory.com
-            </p>
+              {userInitials}
+            </div>
+            <div style={{ lineHeight: 1.2 }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  color: "var(--color-text-primary)",
+                }}
+              >
+                {user?.name || userRoleLabel}
+              </p>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: "11px",
+                  color: "var(--color-text-muted)",
+                }}
+              >
+                {user?.email || ""}
+              </p>
+            </div>
           </div>
+          <button
+            onClick={logout}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              padding: "8px 12px",
+              borderRadius: "var(--radius-md)",
+              background: "var(--color-background)",
+              border: "1px solid var(--color-border)",
+              color: "var(--color-text-secondary)",
+              cursor: "pointer",
+              fontSize: "12px",
+              fontWeight: 600,
+              transition: "all var(--duration-micro) ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--color-surface-hover)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--color-background)";
+            }}
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
         </div>
       </div>
     </header>

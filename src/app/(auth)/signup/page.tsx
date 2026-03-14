@@ -233,20 +233,65 @@ export default function SignUpPage() {
                 <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--color-text-primary)", marginBottom: "8px" }}>Create account</h2>
                 <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", marginBottom: "28px" }}>Tell us about yourself and your company</p>
                 <form onSubmit={handleNextToSecurity}>
+                  <div style={{ marginBottom: "24px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Role</label>
+                    <div style={{ display: "flex", gap: "12px" }}>
+                      <button
+                        type="button"
+                        onClick={() => updateField("role", "manager")}
+                        style={{
+                          flex: 1,
+                          padding: "10px 12px",
+                          borderRadius: "10px",
+                          border: formData.role === "manager" ? "1px solid var(--color-primary)" : `1px solid ${errors.role ? "var(--color-error)" : "var(--color-border)"}`,
+                          background: formData.role === "manager" ? "var(--color-primary-light)" : "var(--color-surface)",
+                          color: formData.role === "manager" ? "var(--color-primary)" : "var(--color-text-primary)",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        Inventory Manager
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => updateField("role", "staff")}
+                        style={{
+                          flex: 1,
+                          padding: "10px 12px",
+                          borderRadius: "10px",
+                          border: formData.role === "staff" ? "1px solid var(--color-primary)" : `1px solid ${errors.role ? "var(--color-error)" : "var(--color-border)"}`,
+                          background: formData.role === "staff" ? "var(--color-primary-light)" : "var(--color-surface)",
+                          color: formData.role === "staff" ? "var(--color-primary)" : "var(--color-text-primary)",
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
+                        Warehouse Staff
+                      </button>
+                    </div>
+                    {errors.role && <p style={{ color: "var(--color-error)", fontSize: "12px", marginTop: "6px" }}>{errors.role}</p>}
+                  </div>
+
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Full Name</label>
                     <div style={{ position: "relative" }}>
                       <User size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
                       <input type="text" value={formData.fullName} onChange={(e) => updateField("fullName", e.target.value)} placeholder="John Doe" style={inputStyle(!!errors.fullName)} />
                     </div>
+                    {errors.fullName && <p style={{ color: "var(--color-error)", fontSize: "12px", marginTop: "4px" }}>{errors.fullName}</p>}
                   </div>
+
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Email Address</label>
                     <div style={{ position: "relative" }}>
                       <Mail size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
                       <input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} placeholder="you@company.com" style={inputStyle(!!errors.email)} />
                     </div>
+                    {errors.email && <p style={{ color: "var(--color-error)", fontSize: "12px", marginTop: "4px" }}>{errors.email}</p>}
                   </div>
+
                   <div style={{ marginBottom: "16px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Company</label>
                     <div style={{ position: "relative" }}>
@@ -254,20 +299,15 @@ export default function SignUpPage() {
                       <input type="text" value={formData.company} onChange={(e) => updateField("company", e.target.value)} placeholder="Acme Logistics" style={inputStyle(false)} />
                     </div>
                   </div>
-                  <div style={{ marginBottom: "24px" }}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>Role</label>
-                    <select value={formData.role} onChange={(e) => updateField("role", e.target.value)} style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-md)", border: `1px solid ${errors.role ? "var(--color-error)" : "var(--color-border)"}`, background: "var(--color-surface)", outline: "none", cursor: "pointer" }}>
-                      <option value="">Select role</option>
-                      <option value="manager">Inventory Manager</option>
-                      <option value="staff">Warehouse Staff</option>
-                    </select>
-                  </div>
+
                   <div style={{ marginBottom: "24px" }}>
                     <label style={{ display: "flex", gap: "10px", fontSize: "13px", color: "var(--color-text-secondary)", cursor: "pointer" }}>
                       <input type="checkbox" checked={formData.acceptTerms} onChange={(e) => updateField("acceptTerms", e.target.checked)} style={{ accentColor: "var(--color-primary)" }} />
                       <span>I agree to the Terms & Privacy Policy</span>
                     </label>
+                    {errors.acceptTerms && <p style={{ color: "var(--color-error)", fontSize: "12px", marginTop: "4px" }}>{errors.acceptTerms}</p>}
                   </div>
+
                   <button type="submit" style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", background: "var(--color-primary)", color: "#fff", border: "none", fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                     Continue <ArrowRight size={18} />
                   </button>

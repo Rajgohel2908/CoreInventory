@@ -1,11 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { Search, Filter, ChevronDown, Download, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 
-const ledgerEntries = [
+type LedgerEntry = {
+  id: number;
+  timestamp: string;
+  ref: string;
+  product: string;
+  sku: string;
+  type: string;
+  location: string;
+  change: number;
+  balance: number;
+  operator: string;
+};
+
+const ledgerEntries: LedgerEntry[] = [
   { id: 1, timestamp: "Mar 14, 2026 09:12", ref: "REC/2026/0108", product: "Steel Bolts M10", sku: "STL-BLT-M10", type: "Receipt", location: "Main Warehouse / Rack A", change: +250, balance: 2450, operator: "John Doe" },
   { id: 2, timestamp: "Mar 14, 2026 08:45", ref: "DEL/2026/0045", product: "Copper Pipes 2m", sku: "CPR-PIP-2M", type: "Delivery", location: "East Wing / Zone B", change: -100, balance: 89, operator: "Jane Smith" },
   { id: 3, timestamp: "Mar 13, 2026 16:30", ref: "TRF/2026/0042", product: "Safety Gloves XL", sku: "SFT-GLV-XL", type: "Transfer Out", location: "Main Warehouse / Rack C", change: -500, balance: 700, operator: "John Doe" },
@@ -17,6 +30,68 @@ const ledgerEntries = [
 ];
 
 export default function LedgerPage() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const filteredEntries = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return ledgerEntries;
+    return ledgerEntries.filter((entry) =>
+      [entry.product, entry.sku, entry.ref].some((field) => field.toLowerCase().includes(term))
+    );
+  }, [searchTerm]);
+
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(filteredEntries.length / itemsPerPage)),
+    [filteredEntries.length, itemsPerPage]
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEntries = filteredEntries.slice(startIndex, endIndex);
+
+  const displayStart = filteredEntries.length === 0 ? 0 : startIndex + 1;
+  const displayEnd = filteredEntries.length === 0 ? 0 : Math.min(endIndex, filteredEntries.length);
+
+  const handleExportCsv = () => {
+    const escapeCsv = (val: string | number) => `"${String(val).replace(/"/g, '""')}"`;
+    const headers = ["Timestamp", "Reference", "Product", "SKU", "Type", "Location", "Change", "Balance", "Operator"];
+    const rows = filteredEntries.map((entry) => [
+      escapeCsv(entry.timestamp),
+      escapeCsv(entry.ref),
+      escapeCsv(entry.product),
+      escapeCsv(entry.sku),
+      escapeCsv(entry.type),
+      escapeCsv(entry.location),
+      escapeCsv(entry.change > 0 ? `+${entry.change}` : entry.change),
+      escapeCsv(entry.balance),
+      escapeCsv(entry.operator),
+    ]);
+    const csvContent = [headers.map(escapeCsv).join(","), ...rows.map((r) => r.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ledger.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFilterClick = () => {
+    console.log("Open filters");
+  };
+
   return (
     <div>
       <Breadcrumbs />
@@ -26,7 +101,11 @@ export default function LedgerPage() {
           <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", margin: 0 }}>Complete audit trail of all stock movements</p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
-          <motion.button whileTap={{ scale: 0.97 }} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={handleExportCsv}
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit" }}
+          >
             <Download size={14} /> Export CSV
           </motion.button>
         </div>
@@ -36,9 +115,15 @@ export default function LedgerPage() {
         <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--color-border)", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: "200px", position: "relative" }}>
             <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-text-muted)" }} />
-            <input type="text" placeholder="Search by product, SKU, or reference..." style={{ width: "100%", padding: "8px 12px 8px 36px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", outline: "none", fontFamily: "inherit", background: "var(--color-background)" }} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by product, SKU, or reference..."
+              style={{ width: "100%", padding: "8px 12px 8px 36px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "13px", outline: "none", fontFamily: "inherit", background: "var(--color-background)" }}
+            />
           </div>
-          <button style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", fontSize: "13px", cursor: "pointer", fontFamily: "inherit" }}>
+          <button onClick={handleFilterClick} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", background: "var(--color-surface)", color: "var(--color-text-secondary)", fontSize: "13px", cursor: "pointer", fontFamily: "inherit" }}>
             <Filter size={14} /> Filters <ChevronDown size={12} />
           </button>
         </div>
@@ -53,9 +138,14 @@ export default function LedgerPage() {
               </tr>
             </thead>
             <tbody>
-              {ledgerEntries.map((entry, i) => (
-                <motion.tr key={entry.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                  style={{ borderBottom: "1px solid var(--color-border)", height: "48px", background: i % 2 === 0 ? "transparent" : "var(--color-background)" }}>
+              {paginatedEntries.map((entry, i) => (
+                <motion.tr
+                  key={entry.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: i * 0.02 }}
+                  style={{ borderBottom: "1px solid var(--color-border)", height: "48px", background: i % 2 === 0 ? "transparent" : "var(--color-background)" }}
+                >
                   <td style={{ padding: "10px 16px", color: "var(--color-text-muted)", whiteSpace: "nowrap", fontSize: "12px" }}>{entry.timestamp}</td>
                   <td style={{ padding: "10px 16px", fontFamily: "var(--font-geist-mono)", fontWeight: 500, color: "var(--color-primary)", fontSize: "12px" }}>{entry.ref}</td>
                   <td style={{ padding: "10px 16px", color: "var(--color-text-primary)", fontWeight: 500 }}>{entry.product}</td>
@@ -72,15 +162,42 @@ export default function LedgerPage() {
                   <td style={{ padding: "10px 16px", color: "var(--color-text-secondary)", fontSize: "12px" }}>{entry.operator}</td>
                 </motion.tr>
               ))}
+              {paginatedEntries.length === 0 && (
+                <tr>
+                  <td colSpan={9} style={{ padding: "16px", textAlign: "center", color: "var(--color-text-secondary)" }}>
+                    No results found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
         <div style={{ padding: "12px 24px", borderTop: "1px solid var(--color-border)", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "13px", color: "var(--color-text-muted)" }}>
-          <span>Showing 1-8 of 1,247 entries</span>
+          <span>Showing {displayStart}-{displayEnd} of {filteredEntries.length} entries</span>
           <div style={{ display: "flex", gap: "4px" }}>
-            {[1, 2, 3, "...", 156].map((page, i) => (
-              <button key={i} style={{ width: "32px", height: "32px", borderRadius: "var(--radius-md)", border: page === 1 ? "none" : "1px solid var(--color-border)", background: page === 1 ? "var(--color-primary)" : "transparent", color: page === 1 ? "#fff" : "var(--color-text-secondary)", fontSize: "13px", fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>{page}</button>
+            {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  borderRadius: "var(--radius-md)",
+                  border: page === currentPage ? "none" : "1px solid var(--color-border)",
+                  background: page === currentPage ? "var(--color-primary)" : "transparent",
+                  color: page === currentPage ? "#fff" : "var(--color-text-secondary)",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontFamily: "inherit",
+                }}
+              >
+                {page}
+              </button>
             ))}
           </div>
         </div>

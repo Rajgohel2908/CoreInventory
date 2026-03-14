@@ -1,12 +1,17 @@
 import twilio from "twilio";
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const verifySid = process.env.TWILIO_VERIFY_SID;
-
 let client: twilio.Twilio | null = null;
 
+function getTwilioConfig() {
+  return {
+    accountSid: process.env.TWILIO_ACCOUNT_SID?.trim(),
+    authToken: process.env.TWILIO_AUTH_TOKEN?.trim(),
+    verifySid: process.env.TWILIO_VERIFY_SID?.trim(),
+  };
+}
+
 function getClient(): twilio.Twilio {
+  const { accountSid, authToken } = getTwilioConfig();
   if (!accountSid || !authToken) {
     throw new Error("Twilio credentials not configured. Set TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.");
   }
@@ -26,6 +31,7 @@ export async function sendOTP(
   channel: "sms" | "email" | "call" = "sms"
 ): Promise<{ success: boolean; sid?: string; error?: string }> {
   try {
+    const { verifySid } = getTwilioConfig();
     if (!verifySid) throw new Error("TWILIO_VERIFY_SID not set");
     const twilioClient = getClient();
 
@@ -54,6 +60,7 @@ export async function verifyOTP(
   code: string
 ): Promise<{ success: boolean; valid: boolean; error?: string }> {
   try {
+    const { verifySid } = getTwilioConfig();
     if (!verifySid) throw new Error("TWILIO_VERIFY_SID not set");
     const twilioClient = getClient();
 

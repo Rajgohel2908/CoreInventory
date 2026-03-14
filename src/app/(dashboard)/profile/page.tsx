@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import { useAuth } from "@/context/AuthContext";
 import { User, Mail, Phone, Lock, Camera, Clock, LogOut, Bell, Save } from "lucide-react";
 
 export default function ProfilePage() {
-  const [name, setName] = useState("Inventory Manager");
-  const [email] = useState("manager@coreinventory.com");
-  const [phone, setPhone] = useState("+91 98765 43210");
+  const { user, logout } = useAuth();
+  const [name, setName] = useState(user?.name || "");
+  const [email] = useState(user?.email || "");
+  const [phone, setPhone] = useState(user?.phone || "");
+
+  const roleLabel = useMemo(() => (user?.role === "STAFF" ? "Warehouse Staff" : "Inventory Manager"), [user?.role]);
 
   return (
     <div>
@@ -27,8 +31,8 @@ export default function ProfilePage() {
               <Camera size={14} color="var(--color-text-secondary)" />
             </button>
           </div>
-          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600, color: "var(--color-text-primary)" }}>{name}</h3>
-          <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "var(--color-primary)", fontWeight: 500 }}>Inventory Manager</p>
+          <h3 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600, color: "var(--color-text-primary)" }}>{name || "Account User"}</h3>
+          <p style={{ margin: "0 0 4px 0", fontSize: "13px", color: "var(--color-primary)", fontWeight: 500 }}>{roleLabel}</p>
           <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "var(--color-text-muted)" }}>{email}</p>
           <div style={{ borderTop: "1px solid var(--color-border)", paddingTop: "16px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "center", fontSize: "12px", color: "var(--color-text-muted)" }}>
@@ -67,7 +71,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "var(--color-text-primary)", marginBottom: "6px" }}>Role</label>
-                <input type="text" value="Inventory Manager" readOnly style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "14px", outline: "none", fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-text-muted)" }} />
+                <input type="text" value={roleLabel} readOnly style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-border)", fontSize: "14px", outline: "none", fontFamily: "inherit", background: "var(--color-background)", color: "var(--color-text-muted)" }} />
               </div>
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
@@ -102,7 +106,12 @@ export default function ProfilePage() {
                   <p style={{ margin: 0, fontSize: "12px", color: "var(--color-text-muted)" }}>Sign out from all active sessions</p>
                 </div>
               </div>
-              <button style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-error)", background: "transparent", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit", color: "var(--color-error)" }}>Sign Out All</button>
+              <button
+                onClick={logout}
+                style={{ padding: "8px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--color-error)", background: "transparent", fontSize: "13px", fontWeight: 500, cursor: "pointer", fontFamily: "inherit", color: "var(--color-error)" }}
+              >
+                Sign Out All
+              </button>
             </div>
           </motion.div>
         </div>
