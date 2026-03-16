@@ -55,7 +55,11 @@ export default function SignUpPage() {
 
   const updateField = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (field === "password" || field === "confirmPassword") {
+      setErrors((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+    } else {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
   };
 
   const validateInfo = () => {

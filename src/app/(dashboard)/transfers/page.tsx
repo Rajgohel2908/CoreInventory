@@ -172,7 +172,7 @@ export default function TransfersPage() {
                 <div className="flex items-center gap-2 self-start sm:self-center">
                   <button
                     type="button"
-                    onClick={() => router.push("/transfers/new")}
+                    onClick={() => router.push(`/transfers/${encodeURIComponent(transfer.ref)}`)}
                     className={`rounded-lg px-3 py-2 text-xs font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                       isPending
                         ? "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-500"
@@ -184,7 +184,7 @@ export default function TransfersPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => router.push("/transfers/new")}
+                    onClick={() => router.push(`/transfers/${encodeURIComponent(transfer.ref)}`)}
                     className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 hover:border-slate-400"
                   >
                     Details

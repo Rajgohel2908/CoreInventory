@@ -3,7 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ClipboardCheck, Clock3, MapPin, Search, Filter } from "lucide-react";
+import { ClipboardCheck, Clock3, MapPin, Search, Filter, Plus } from "lucide-react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import StatusBadge from "@/components/shared/StatusBadge";
 
@@ -89,19 +89,29 @@ export default function ReceiptsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Shelving & Receipts</h1>
           <p className="text-sm text-slate-500">Draft and Confirmed receipts waiting for putaway.</p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            if (nextPending) {
-              router.push(`/receipts/${encodeURIComponent(nextPending.ref)}`);
-            }
-          }}
-          disabled={!nextPending}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-        >
-          <ClipboardCheck className="h-4 w-4" />
-          Process next receipt
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => router.push("/receipts/new")}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+          >
+            <Plus className="h-4 w-4" />
+            Add New Receipt
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (nextPending) {
+                router.push(`/receipts/${encodeURIComponent(nextPending.ref)}`);
+              }
+            }}
+            disabled={!nextPending}
+            className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Process next receipt
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

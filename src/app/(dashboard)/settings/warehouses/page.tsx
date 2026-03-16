@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
-import { Shield, CheckSquare, ArrowLeftRight, Truck, ClipboardCheck, SlidersHorizontal } from "lucide-react";
+import { Shield, CheckSquare, ArrowLeftRight, Truck, ClipboardCheck, SlidersHorizontal, Plus } from "lucide-react";
 
 type PermissionKey = "transfers" | "picking" | "shelving" | "counting";
 
@@ -50,10 +50,19 @@ export default function WarehousesPage() {
     <div className="space-y-6">
       <Breadcrumbs />
 
-      <div className="space-y-2">
-        <p className="text-sm text-slate-500">Settings / Warehouses</p>
-        <h1 className="text-3xl font-bold text-slate-900">Warehouse Roles</h1>
-        <p className="text-sm text-slate-500">Create and manage the dedicated Warehouse Staff role.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-2">
+          <p className="text-sm text-slate-500">Settings / Warehouses</p>
+          <h1 className="text-3xl font-bold text-slate-900">Warehouse Roles</h1>
+          <p className="text-sm text-slate-500">Create and manage the dedicated Warehouse Staff role.</p>
+        </div>
+        <button
+          type="button"
+          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+        >
+          <Plus className="h-4 w-4" />
+          Add Warehouse
+        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

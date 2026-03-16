@@ -86,6 +86,12 @@ export const NAV_ITEMS = [
 
 export const STAFF_NAV_ITEMS = [
   {
+    section: "Main",
+    items: [
+      { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" },
+    ],
+  },
+  {
     section: "Warehouse Tasks",
     items: [
       { label: "Shelving & Receipts", href: "/receipts", icon: "ClipboardCheck" },

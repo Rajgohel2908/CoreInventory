@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardCheck,
   Truck,
@@ -224,6 +224,8 @@ const recentAdjustments = [
 ];
 
 export default function StaffDashboard() {
+  const [showScanner, setShowScanner] = React.useState(false);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -243,6 +245,7 @@ export default function StaffDashboard() {
             Process next
           </Link>
           <button
+            onClick={() => setShowScanner(true)}
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
             type="button"
           >
@@ -251,6 +254,49 @@ export default function StaffDashboard() {
           </button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {showScanner && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowScanner(false)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl"
+            >
+              <div className="p-6 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                  <ScanBarcode size={32} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900">Barcode Scanner</h3>
+                <p className="mt-2 text-sm text-slate-500">
+                  Position the barcode within the frame to scan.
+                </p>
+                <div className="relative mt-8 aspect-square overflow-hidden rounded-xl bg-slate-100">
+                   <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-48 w-48 rounded-lg border-2 border-dashed border-indigo-400 opacity-50" />
+                   </div>
+                   <div className="absolute inset-x-0 top-1/2 h-0.5 bg-rose-500/50 shadow-[0_0_8px_rgba(244,63,94,0.5)] animate-scan-line" />
+                   <p className="absolute bottom-4 inset-x-0 text-[10px] text-slate-400 uppercase tracking-widest font-bold">Simulation Mode</p>
+                </div>
+                <button
+                  onClick={() => setShowScanner(false)}
+                  className="mt-8 w-full rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
+                >
+                  Close Scanner
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metricCards.map((metric, idx) => (

@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { SlidersHorizontal, Clock3, MapPin, Search, Filter } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { SlidersHorizontal, Clock3, MapPin, Search, Filter, Plus } from "lucide-react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import StatusBadge from "@/components/shared/StatusBadge";
 
 const adjustments = [
+  // ... (keeping existing data)
   {
     ref: "ADJ/2026/0021",
     product: "LED Panels 60W",
@@ -64,6 +66,7 @@ const quickStats = [
 ];
 
 export default function AdjustmentsPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
@@ -92,10 +95,10 @@ export default function AdjustmentsPage() {
         </div>
         <button
           type="button"
-          onClick={() => setStatusFilter("Draft")}
+          onClick={() => router.push("/adjustments/new")}
           className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
         >
-          <SlidersHorizontal className="h-4 w-4" />
+          <Plus className="h-4 w-4" />
           New count
         </button>
       </header>
@@ -153,7 +156,7 @@ export default function AdjustmentsPage() {
                 </span>
                 <StatusBadge status={adj.status} />
                 <span className="rounded-full bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600">
-                  {adj.reason}
+                   {adj.reason}
                 </span>
               </div>
 
@@ -186,6 +189,7 @@ export default function AdjustmentsPage() {
                   </span>
                   <button
                     type="button"
+                    onClick={() => router.push(`/adjustments/${encodeURIComponent(adj.ref)}`)}
                     className={`rounded-lg px-3 py-2 text-xs font-semibold shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
                       isPending
                         ? "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-500"

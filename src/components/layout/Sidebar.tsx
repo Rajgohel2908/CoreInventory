@@ -224,6 +224,8 @@ export default function Sidebar() {
             textDecoration: "none",
             fontSize: "14px",
             transition: "all var(--duration-micro) ease",
+            position: "relative",
+            zIndex: 10,
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = "var(--sidebar-hover)";
@@ -232,14 +234,14 @@ export default function Sidebar() {
             e.currentTarget.style.background = "transparent";
           }}
         >
-          <User size={18} />
+          <User size={18} style={{ flexShrink: 0 }} />
           <AnimatePresence>
             {!sidebarCollapsed && (
               <motion.span
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                style={{ whiteSpace: "nowrap" }}
+                style={{ whiteSpace: "nowrap", flex: 1 }}
               >
                 My Profile
               </motion.span>

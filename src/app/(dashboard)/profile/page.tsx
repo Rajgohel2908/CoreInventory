@@ -8,11 +8,22 @@ import { User, Mail, Phone, Lock, Camera, Clock, LogOut, Bell, Save } from "luci
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
-  const [name, setName] = useState(user?.name || "");
-  const [email] = useState(user?.email || "");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const [name, setName] = React.useState(user?.name || "");
+  const [email] = React.useState(user?.email || "");
+  const [phone, setPhone] = React.useState(user?.phone || "");
 
-  const roleLabel = useMemo(() => (user?.role === "STAFF" ? "Warehouse Staff" : "Inventory Manager"), [user?.role]);
+  React.useEffect(() => {
+    if (user) {
+      setName(user.name || "");
+      setPhone(user.phone || "");
+    }
+  }, [user]);
+
+  const roleLabel = useMemo(() => {
+    if (!user) return "Loading...";
+    return user.role === "STAFF" ? "Warehouse Staff" : "Inventory Manager";
+  }, [user]);
+
   const getInitials = (fullName: string) => {
     return fullName
       .split(" ")

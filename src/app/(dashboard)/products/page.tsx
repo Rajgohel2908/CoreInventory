@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Search,
@@ -68,6 +68,8 @@ function ProductsContent() {
   const [warehouseFilter, setWarehouseFilter] = useState("All");
   const [failedImages, setFailedImages] = useState<Record<string, boolean>>({});
 
+  const router = useRouter();
+
   // Update internal search state if URL changes
   useEffect(() => {
     const q = searchParams?.get("search");
@@ -131,6 +133,7 @@ function ProductsContent() {
         </div>
         <motion.button
           whileTap={{ scale: 0.97 }}
+          onClick={() => router.push("/products/new")}
           style={{
             display: "flex",
             alignItems: "center",
